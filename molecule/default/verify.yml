@@ -11,6 +11,16 @@
         extensions: [ 'yml' ]
 
   tasks:
+    - name: "Get service journal entries"
+      register: journalctl
+      changed_when: false
+      ansible.builtin.command:
+        cmd: journalctl -u cgrpuser-exporter.service
+
+    - name: "Show service journal entries"
+      ansible.builtin.debug:
+        msg: "{{ journalctl.stdout }}"
+
     - name: "Run | check that service is up and giving sane responses"
       changed_when: false
       register: this
