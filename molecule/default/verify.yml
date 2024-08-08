@@ -20,12 +20,12 @@
     - name: "Get user slice names from sysfs"
       register: slices
       changed_when: false
-      ansible.builtin.command:
-        cmd: ls /sys/fs/cgroup/user.slice
+      ansible.builtin.shell:
+        cmd: ls -d /sys/fs/cgroup/user.slice/user-*.slice
 
     - name: "Show user slice names from sysfs"
       ansible.builtin.debug:
-        msg: slices.stdout
+        msg: "{{ slices.stdout }}"
 
     - name: "Show service journal entries"
       ansible.builtin.debug:
