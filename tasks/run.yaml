@@ -1,0 +1,9 @@
+---
+- name: "Run | enable and start the `cgrpuser-exporter` service"
+  changed_when: false
+  ansible.builtin.systemd:
+    name: cgrpuser-exporter
+    enabled: true
+    daemon_reload: true
+    state: restarted
+

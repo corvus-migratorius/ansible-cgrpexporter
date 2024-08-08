@@ -1,1 +1,4 @@
 ---
+cgrpuser_exporter_bin_path: /usr/bin
+cgrpuser_exporter_port: 9201
+cgrpuser_exporter_timeout: 15

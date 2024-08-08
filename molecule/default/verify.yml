@@ -4,8 +4,20 @@
   gather_facts: false
   any_errors_fatal: true
 
+  pre_tasks:
+    - name: "Include default vars"
+      ansible.builtin.include_vars:
+        dir: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') }}/defaults/"
+        extensions: [ 'yml' ]
+
   tasks:
-    - name: "Mock verification task"
+    - name: "Run | check that service is up and giving sane responses"
       changed_when: false
-      ansible.builtin.command:
-        cmd: "true"
+      register: this
+      until: this is ansible.builtin.success
+      retries: 5
+      failed_when: "this is ansible.builtin.failed or 'cgrpuser_exporter_memory_current' not in this.content"
+      ansible.builtin.uri:
+        url: "http://localhost:{{ cgrpuser_exporter_port }}/metrics"
+        status_code: 200
+        return_content: true

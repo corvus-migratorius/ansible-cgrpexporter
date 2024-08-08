@@ -1,0 +1,46 @@
+---
+- name: "Install | check if `cgrpuser_exporter` is accessible from $PATH"
+  tags: [ cgrpuser_exporter, cgrpuser_exporter_install ]
+  block:
+    - name: "Install | check if `cgrpuser-exporter` is accessible from $PATH"
+      changed_when: false
+      register: cgrpuser_exporter_installed_ver
+      ansible.builtin.command:
+        cmd: cgrpuser-exporter --version
+
+    - name: "Install | assert that the requested version is already installed"
+      ansible.builtin.assert:
+        that: "cgrpuser_exporter_ver in cgrpuser_exporter_installed_ver.stdout"
+  rescue:
+    - name: "Install | determine the version of the binary to download"
+      ansible.builtin.set_fact:
+        cgrpuser_exporter_name: "cgrpuser-exporter-\
+      {{ ansible_system | lower }}-\
+      {{ (ansible_architecture == 'x86_64') | ternary('amd64', ansible_architecture) }}"
+
+    - name: "Install | download the `cgrpuser-exporter` binary (release {{ cgrpuser_exporter_ver }})"
+      ansible.builtin.unarchive:
+        src: "https://github.com/corvus-migratorius/cgrpuser-exporter/releases/download/v{{ cgrpuser_exporter_ver }}/{{ cgrpuser_exporter_name }}.tar.gz"
+        dest: /tmp/
+
+        remote_src: true
+    - name: "Install | install the downloaded binary to '{{ cgrpuser_exporter_bin_path }}'"  # noqa: no-changed-when
+      ansible.builtin.command:
+        cmd: install /tmp/{{ cgrpuser_exporter_name }} -t {{ cgrpuser_exporter_bin_path }}
+
+    - name: "Install | create a symlink to '{{ cgrpuser_exporter_name }}'"
+      ansible.builtin.file:
+        src: "{{ cgrpuser_exporter_bin_path }}/{{ cgrpuser_exporter_name }}"
+        dest: "{{ cgrpuser_exporter_bin_path }}/cgrpuser-exporter"
+        owner: root
+        group: root
+        state: link
+        mode: "0755"
+
+
+- name: "Install | push the service file template"
+  tags: [ cgrpuser_exporter, cgrpuser_exporter_install ]
+  ansible.builtin.template:
+    src: cgrpuser-exporter.service.j2
+    dest: /usr/lib/systemd/system/cgrpuser-exporter.service
+    mode: "0660"

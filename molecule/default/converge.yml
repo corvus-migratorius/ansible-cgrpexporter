@@ -1,5 +1,13 @@
 ---
 - name: Converge
   hosts: all
+
+  pre_tasks:
+    - name: "Ensure a user account exists"
+      ansible.builtin.user:
+        name: test
+        uid: 1000
+
   roles:
-    - role: genlab.template
+    - role: genlab.cgrpuser_exporter
+      cgrpuser_exporter_ver: "0.1.2"
