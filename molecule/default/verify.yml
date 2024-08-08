@@ -17,6 +17,16 @@
       ansible.builtin.command:
         cmd: journalctl -u cgrpuser-exporter.service
 
+    - name: "Get user slice names from sysfs"
+      register: slices
+      changed_when: false
+      ansible.builtin.command:
+        cmd: ls /sys/fs/cgroup/user.slice
+
+    - name: "Show user slice names from sysfs"
+      ansible.builtin.debug:
+        msg: slices.stdout
+
     - name: "Show service journal entries"
       ansible.builtin.debug:
         msg: "{{ journalctl.stdout }}"
