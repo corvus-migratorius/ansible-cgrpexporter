@@ -1,7 +1,7 @@
-template
+ansible-cgrpexporter
 =========
 
-Template for Ansible role monorepos
+Deploy the `cgrpexporter`
 
 Requirements
 ------------

@@ -4,8 +4,40 @@
   gather_facts: false
   any_errors_fatal: true
 
+  pre_tasks:
+    - name: "Include default vars"
+      ansible.builtin.include_vars:
+        dir: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') }}/defaults/"
+        extensions: [ 'yml' ]
+
   tasks:
-    - name: "Mock verification task"
+    - name: "Get service journal entries"
+      register: journalctl
       changed_when: false
       ansible.builtin.command:
-        cmd: "true"
+        cmd: journalctl -u cgrpuser-exporter.service
+
+    - name: "Get user slice names from sysfs"
+      register: slices
+      changed_when: false
+      ansible.builtin.shell:
+        cmd: ls -d /sys/fs/cgroup/user.slice/user-*.slice
+
+    - name: "Show user slice names from sysfs"
+      ansible.builtin.debug:
+        msg: "{{ slices.stdout }}"
+
+    - name: "Show service journal entries"
+      ansible.builtin.debug:
+        msg: "{{ journalctl.stdout }}"
+
+    - name: "Run | check that service is up and giving sane responses"
+      changed_when: false
+      register: this
+      until: this is ansible.builtin.success
+      retries: 5
+      failed_when: "this is ansible.builtin.failed or 'cgrpuser_exporter_memory_current' not in this.content"
+      ansible.builtin.uri:
+        url: "http://localhost:{{ cgrpuser_exporter_port }}/metrics"
+        status_code: 200
+        return_content: true

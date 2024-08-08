@@ -1,4 +1,7 @@
 ---
-- name: "Mock task"
-  ansible.builtin.debug:
-    msg: "hello, world!"
+# tasks file for cgrpuser_exporter
+- name: "Include installation tasks"
+  ansible.builtin.include_tasks: install.yaml
+
+- name: "Include tasks for running the exporter"
+  ansible.builtin.include_tasks: run.yaml

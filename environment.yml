@@ -1,5 +1,5 @@
 ---
-name: ansible-role-template
+name: ansible-cgrpuser-exporter
 channels:
   - conda-forge
 dependencies:
